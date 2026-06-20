@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PGR Mental — Plataforma de Saúde Mental no Trabalho</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#060D1A;--surface:#0D1B2E;--card:#112240;--border:rgba(255,255,255,0.07);
+  --blue:#2E75B6;--sky:#5DADE2;--mint:#00C896;--amber:#F0A500;--red:#E74C3C;
+  --text:#F0F4FF;--muted:rgba(240,244,255,0.85);--ice:rgba(93,173,226,0.1);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Instrument Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");opacity:.4;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:32px 0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{padding:0 24px 32px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.logo-mark{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1}
+.logo-mark span{color:var(--mint)}
+.logo-sub{font-size:11px;color:var(--muted);margin-top:4px;letter-spacing:.05em}
+.nav-section{padding:0 16px;margin-bottom:8px}
+.nav-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:0 8px;margin-bottom:8px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s;color:var(--muted);font-size:13px;font-weight:500;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+.nav-item:hover{background:var(--ice);color:var(--text)}
+.nav-item.active{background:rgba(0,200,150,.1);color:var(--mint)}
+.nav-item.active .nav-icon{color:var(--mint)}
+.nav-icon{font-size:16px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--amber);color:#000;font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px}
+.nav-badge.free{background:var(--mint);color:#000}
+.nav-badge.locked{background:rgba(255,255,255,.1);color:var(--muted)}
+.sidebar-footer{margin-top:auto;padding:24px 16px 0;border-top:1px solid var(--border)}
+.unlock-btn{display:block;width:100%;background:linear-gradient(135deg,var(--mint),var(--blue));color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;padding:14px;border-radius:10px;border:none;cursor:pointer;text-align:center;transition:opacity .2s;letter-spacing:.03em}
+.unlock-btn:hover{opacity:.85}
+.unlock-price{font-size:11px;color:var(--muted);text-align:center;margin-top:8px}
+.main{padding:40px 48px;overflow-y:auto}
+.page-header{margin-bottom:40px}
+.page-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(0,200,150,.1);border:1px solid rgba(0,200,150,.2);color:var(--mint);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:4px 12px;border-radius:100px;margin-bottom:16px}
+.page-title{font-family:'Syne',sans-serif;font-size:clamp(28px,3vw,42px);font-weight:800;line-height:1.1;margin-bottom:12px}
+.page-title em{font-style:italic;color:var(--sky)}
+.page-desc{font-size:16px;color:var(--muted);line-height:1.7;max-width:640px}
+.screen{display:none}
+.screen.active{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.blue::before{background:var(--blue)}
+.stat-card.mint::before{background:var(--mint)}
+.stat-card.red::before{background:var(--red)}
+.stat-num{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;line-height:1;margin-bottom:8px}
+.stat-card.blue .stat-num{color:var(--sky)}
+.stat-card.mint .stat-num{color:var(--mint)}
+.stat-card.red .stat-num{color:var(--red)}
+.stat-label{font-size:13px;color:var(--muted);line-height:1.5}
+.modules-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:40px}
+.module-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;cursor:pointer;transition:border-color .2s,transform .2s;position:relative}
+.module-card:hover{border-color:rgba(93,173,226,.3);transform:translateY(-2px)}
+.module-card.locked{opacity:.7;cursor:not-allowed}
+.module-card.locked:hover{transform:none}
+.module-icon{font-size:32px;margin-bottom:16px;display:block}
+.module-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:8px}
+.module-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+.module-footer{display:flex;align-items:center;justify-content:space-between}
+.module-tag{font-size:11px;font-weight:700;padding:3px 10px;border-radius:100px}
+.tag-free{background:rgba(0,200,150,.1);color:var(--mint);border:1px solid rgba(0,200,150,.2)}
+.tag-paid{background:rgba(240,165,0,.1);color:var(--amber);border:1px solid rgba(240,165,0,.2)}
+.module-arrow{color:var(--muted);font-size:18px;transition:transform .2s}
+.module-card:hover .module-arrow{transform:translateX(4px)}
+.lock-icon{font-size:16px;color:var(--muted)}
+.alert-box{background:linear-gradient(135deg,rgba(231,76,60,.1),rgba(231,76,60,.05));border:1px solid rgba(231,76,60,.2);border-left:4px solid var(--red);border-radius:12px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start}
+.alert-box .icon{font-size:24px;flex-shrink:0}
+.alert-box h4{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px}
+.alert-box p{font-size:13px;color:var(--muted);line-height:1.6}
+.alert-box p strong{color:var(--red)}
+.diag-intro{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:32px;display:flex;gap:32px;align-items:center}
+.diag-intro-text h3{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;margin-bottom:10px}
+.diag-intro-text p{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+.start-btn{background:linear-gradient(135deg,var(--mint),#00A878);color:#000;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;padding:14px 32px;border-radius:8px;border:none;cursor:pointer;transition:opacity .2s}
+.start-btn:hover{opacity:.85}
+.diag-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.diag-badge{background:var(--ice);border:1px solid var(--border);color:var(--muted);font-size:12px;padding:4px 12px;border-radius:100px}
+.progress-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
+.progress-bar{flex:1;height:8px;background:rgba(255,255,255,.07);border-radius:100px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--mint),var(--blue));border-radius:100px;transition:width .4s ease}
+.progress-text{font-size:13px;color:var(--muted);flex-shrink:0;white-space:nowrap}
+.question-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;margin-bottom:20px}
+.q-category{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sky);margin-bottom:12px}
+.q-text{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;line-height:1.4;margin-bottom:24px}
+.q-options{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.q-opt{background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;cursor:pointer;transition:all .15s;font-size:12px;color:var(--muted);line-height:1.3}
+.q-opt:hover{border-color:var(--sky);color:var(--text);background:var(--ice)}
+.q-opt.selected{border-color:var(--mint);color:var(--mint);background:rgba(0,200,150,.1)}
+.q-opt .opt-label{font-weight:600;font-size:11px;margin-bottom:4px;display:block}
+.q-opt .opt-val{font-size:18px;font-weight:700}
+.diag-nav{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
+.btn-back{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);font-family:'Instrument Sans',sans-serif;font-size:14px;font-weight:600;padding:12px 24px;border-radius:8px;cursor:pointer;transition:all .15s}
+.btn-back:hover{color:var(--text);border-color:rgba(255,255,255,.15)}
+.btn-next{background:linear-gradient(135deg,var(--blue),var(--sky));color:#fff;font-family:'Instrument Sans',sans-serif;font-size:14px;font-weight:600;padding:12px 28px;border-radius:8px;border:none;cursor:pointer;transition:opacity .2s}
+.btn-next:hover{opacity:.85}
+.btn-next:disabled{opacity:.35;cursor:not-allowed}
+.result-wrap{display:none}
+.gauge-section{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;text-align:center;margin-bottom:24px;position:relative;overflow:hidden}
+.gauge-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 50% 120%,rgba(46,117,182,.15),transparent 60%)}
+.gauge-label{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.gauge-score{font-family:'Syne',sans-serif;font-size:80px;font-weight:800;line-height:1;margin-bottom:8px}
+.gauge-classification{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;margin-bottom:16px}
+.gauge-desc{font-size:15px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.7}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
+.result-cat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.result-cat-name{font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.result-cat-bar{height:6px;background:rgba(255,255,255,.07);border-radius:100px;overflow:hidden;margin-bottom:8px}
+.result-cat-fill{height:100%;border-radius:100px}
+.result-cat-score{font-family:'Syne',sans-serif;font-size:22px;font-weight:800}
+.action-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px}
+.action-section h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.action-item{display:flex;gap:14px;padding:16px;background:rgba(255,255,255,.03);border-radius:10px;margin-bottom:10px;border-left:3px solid var(--mint)}
+.action-item.high{border-left-color:var(--red)}
+.action-item.med{border-left-color:var(--amber)}
+.action-num{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--mint);flex-shrink:0;line-height:1}
+.action-item.high .action-num{color:var(--red)}
+.action-item.med .action-num{color:var(--amber)}
+.action-content h5{font-size:14px;font-weight:600;margin-bottom:4px}
+.action-content p{font-size:13px;color:var(--muted);line-height:1.6}
+.upgrade-cta{background:linear-gradient(135deg,#0A1628,#1A3A6A);border:1px solid rgba(93,173,226,.2);border-radius:20px;padding:40px;text-align:center;margin-bottom:24px;position:relative;overflow:hidden}
+.upgrade-cta::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 0%,rgba(0,200,150,.1),transparent 60%)}
+.upgrade-cta h3{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:12px;position:relative}
+.upgrade-cta p{font-size:15px;color:rgba(255,255,255,.55);max-width:480px;margin:0 auto 28px;line-height:1.7;position:relative}
+.upgrade-features{display:flex;justify-content:center;flex-wrap:wrap;gap:12px;margin-bottom:28px;position:relative}
+.uf-item{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.65)}
+.uf-item::before{content:'✓';color:var(--mint);font-weight:700}
+.upgrade-btn{background:linear-gradient(135deg,var(--mint),var(--blue));color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;padding:18px 48px;border-radius:10px;border:none;cursor:pointer;transition:opacity .2s,transform .2s;position:relative;box-shadow:0 8px 32px rgba(0,200,150,.25)}
+.upgrade-btn:hover{opacity:.9;transform:translateY(-2px)}
+.upgrade-price{font-size:12px;color:rgba(255,255,255,.35);margin-top:12px;position:relative}
+.lesson-layout{display:grid;grid-template-columns:240px 1fr;gap:24px}
+.lesson-nav{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;height:fit-content;position:sticky;top:0}
+.lesson-nav h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:16px}
+.lesson-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .15s;font-size:13px;color:var(--muted)}
+.lesson-item:hover{background:var(--ice);color:var(--text)}
+.lesson-item.active{background:rgba(0,200,150,.1);color:var(--mint)}
+.lesson-item.done{color:var(--muted)}
+.lesson-item.done::before{content:'✓';color:var(--mint);font-weight:700;margin-right:2px}
+.lesson-num{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.lesson-item.active .lesson-num{background:var(--mint);color:#000}
+.lesson-content{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px;min-height:500px}
+.lesson-header{margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.lesson-tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--sky);margin-bottom:8px}
+.lesson-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1.2;margin-bottom:12px}
+.lesson-body{font-size:15px;color:rgba(240,244,255,.75);line-height:1.8;margin-bottom:24px}
+.lesson-highlight{background:rgba(0,200,150,.07);border-left:4px solid var(--mint);border-radius:0 8px 8px 0;padding:18px 20px;margin:24px 0;font-size:14px;line-height:1.7;color:rgba(240,244,255,.85)}
+.lesson-highlight strong{color:var(--mint)}
+.lesson-highlight-amber{background:rgba(240,165,0,.07);border-left:4px solid var(--amber);border-radius:0 8px 8px 0;padding:18px 20px;margin:24px 0;font-size:14px;line-height:1.7;color:rgba(240,244,255,.85)}
+.lesson-highlight-amber strong{color:var(--amber)}
+.carousel-wrap{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:24px}
+.carousel-header{padding:24px 28px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.carousel-header h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700}
+.carousel-counter{font-size:13px;color:var(--muted)}
+.carousel-slides{position:relative;overflow:hidden}
+.slide{display:none;padding:48px;min-height:380px;flex-direction:column;justify-content:space-between;position:relative}
+.slide.active{display:flex}
+.slide-num{font-family:'Syne',sans-serif;font-size:72px;font-weight:800;color:rgba(255,255,255,.04);position:absolute;top:24px;right:32px;line-height:1}
+.slide-tag{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sky);margin-bottom:16px}
+.slide-title{font-family:'Syne',sans-serif;font-size:clamp(22px,2.5vw,32px);font-weight:800;line-height:1.2;margin-bottom:20px;max-width:600px}
+.slide-body{font-size:15px;color:var(--muted);line-height:1.75;max-width:580px;flex:1}
+.slide-stat{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;color:var(--mint);margin:16px 0 8px}
+.slide-stat-label{font-size:14px;color:var(--muted)}
+.carousel-footer{padding:20px 28px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.carousel-dots{display:flex;gap:6px}
+.dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:all .2s}
+.dot.active{background:var(--mint);width:20px;border-radius:3px}
+.carousel-btns{display:flex;gap:8px}
+.c-btn{width:40px;height:40px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);font-size:18px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.c-btn:hover{border-color:var(--sky);color:var(--text)}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:48px;max-width:480px;width:100%;text-align:center;position:relative}
+.modal h3{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;margin-bottom:12px}
+.modal p{font-size:15px;color:var(--muted);line-height:1.7;margin-bottom:28px}
+.modal-features{text-align:left;margin-bottom:28px;display:flex;flex-direction:column;gap:8px}
+.modal-feature{display:flex;align-items:center;gap:10px;font-size:14px;color:rgba(240,244,255,.7)}
+.modal-feature::before{content:'✓';color:var(--mint);font-weight:700;flex-shrink:0}
+.modal-price{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;margin-bottom:4px}
+.modal-price span{font-size:22px;font-weight:300;vertical-align:top;margin-top:10px;display:inline-block}
+.modal-price-sub{font-size:13px;color:var(--mint);margin-bottom:24px}
+.modal-btn{background:linear-gradient(135deg,var(--mint),var(--blue));color:#fff;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;padding:16px 40px;border-radius:10px;border:none;cursor:pointer;width:100%;transition:opacity .2s;box-shadow:0 8px 32px rgba(0,200,150,.2)}
+.modal-btn:hover{opacity:.85}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .main{padding:24px 20px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .modules-grid{grid-template-columns:1fr}
+  .q-options{grid-template-columns:repeat(3,1fr)}
+  .lesson-layout{grid-template-columns:1fr}
+  .lesson-nav{display:none}
+  .results-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">PGR<span>Mental</span></div>
+    <div class="logo-sub">Plataforma NR-1 · 2026</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Gratuito</div>
+    <button class="nav-item active" onclick="navigate('home')">
+      <span class="nav-icon">🏠</span> Início
+      <span class="nav-badge free">FREE</span>
+    </button><button class="nav-item" onclick="navigate('diagnostico')">
+      <span class="nav-icon">📋</span> Diagnóstico PGR
+      <span class="nav-badge free">FREE</span>
+    </button>
+    <button class="nav-item" onclick="navigate('aula')">
+      <span class="nav-icon">🎓</span> Mini Aula NR-1
+      <span class="nav-badge free">FREE</span>
+    </button>
+    <button class="nav-item" onclick="navigate('carrossel')">
+      <span class="nav-icon">📊</span> Carrossel Educativo
+      <span class="nav-badge free">FREE</span>
+    </button>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Premium — R$ 97</div>
+    <button class="nav-item" onclick="showLocked()">
+      <span class="nav-icon">🗓️</span> Plano de 30 Dias
+      <span class="nav-badge locked">🔒</span>
+    </button>
+    <button class="nav-item" onclick="showLocked()">
+      <span class="nav-icon">✅</span> Checklist Completo
+      <span class="nav-badge locked">🔒</span>
+    </button>
+    <button class="nav-item" onclick="showLocked()">
+      <span class="nav-icon">⚖️</span> Matriz GUT
+      <span class="nav-badge locked">🔒</span>
+    </button>
+    <button class="nav-item" onclick="showLocked()">
+      <span class="nav-icon">📄</span> Templates PGR
+      <span class="nav-badge locked">🔒</span>
+    </button>
+    <button class="nav-item" onclick="showLocked()">
+      <span class="nav-icon">🎬</span> Roteiro de Vídeo
+      <span class="nav-badge locked">🔒</span>
+    </button>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="unlock-btn" onclick="showLocked()">Desbloquear Tudo</button>
+    <div class="unlock-price">R$ 97 · acesso vitalício</div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <div class="screen active" id="screen-home">
+    <div class="page-header">
+      <div class="page-tag">📌 Fiscalização punitiva em vigor desde 26 de maio de 2026</div>
+      <h1 class="page-title">Bem-vindo ao<br><em>PGR Mental</em></h1>
+      <p class="page-desc">A plataforma que transforma a NR-1 em ação prática. Diagnostique, aprenda e implemente — tudo em um só lugar.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-num">540k</div>
+        <div class="stat-label">afastamentos por transtornos mentais em 2025 — alta de 68%</div>
+      </div>
+      <div class="stat-card mint">
+        <div class="stat-num">58%</div>
+        <div class="stat-label">dos colaboradores enfrentam algum nível de risco psicossocial no trabalho</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-num">2026</div>
+        <div class="stat-label">fiscalização com caráter punitivo em vigor desde 26 de maio de 2026</div>
+      </div>
+    </div>
+
+    <div class="modules-grid">
+      <div class="module-card" onclick="navigate('diagnostico')">
+        <span class="module-icon">📋</span>
+        <div class="module-title">Diagnóstico PGR Mental</div>
+        <div class="module-desc">Avalie o nível de risco psicossocial da sua organização em 10 minutos. Receba classificação e plano de ação automático.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-free">Gratuito</span>
+          <span class="module-arrow">→</span>
+        </div>
+      </div>
+      <div class="module-card" onclick="navigate('aula')">
+        <span class="module-icon">🎓</span>
+        <div class="module-title">Mini Aula: O que a NR-1 realmente exige</div>
+        <div class="module-desc">A distinção mais importante — e que a maioria das empresas ignora. Aprenda em 5 lições objetivas.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-free">Gratuito</span>
+          <span class="module-arrow">→</span>
+        </div>
+      </div>
+      <div class="module-card" onclick="navigate('carrossel')">
+        <span class="module-icon">📊</span>
+        <div class="module-title">Carrossel Educativo</div>
+        <div class="module-desc">10 slides interativos com os dados, conceitos e argumentos mais importantes sobre riscos psicossociais.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-free">Gratuito</span>
+          <span class="module-arrow">→</span>
+        </div>
+      </div>
+      <div class="module-card locked" onclick="showLocked()">
+        <span class="module-icon">🗓️</span>
+        <div class="module-title">Plano de Implementação — 30 Dias</div>
+        <div class="module-desc">Trilha dia a dia para implementar o mapeamento de riscos psicossociais do zero à conformidade legal.</div>
+        <div class="module-footer">
+          <span class="module-tag tag-paid">Premium</span>
+          <span class="lock-icon">🔒</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert-box">
+      <div class="icon">⚠️</div>
+      <div>
+        <h4>Atenção: Fiscalização punitiva em vigor desde maio de 2026</h4>
+        <p>A fase educativa encerrou. O MPT e a Auditoria-Fiscal do Trabalho já aplicam autuações e multas. <strong>Empresas sem documentação no PGR estão expostas a passivo trabalhista agora.</strong></p>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px">
+      <div style="background:var(--card);border:1px solid var(--border);border-top:3px solid var(--mint);border-radius:14px;padding:22px">
+        <div style="font-size:28px;margin-bottom:10px">📋</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Incluir no PGR</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Riscos psicossociais devem constar oficialmente no Programa de Gerenciamento de Riscos</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-top:3px solid var(--sky);border-radius:14px;padding:22px">
+        <div style="font-size:28px;margin-bottom:10px">🔍</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Mapear e Diagnosticar</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Levantamento ativo de causadores de estresse: clima, turnover, sobrecarga de tarefas</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border);border-top:3px solid var(--amber);border-radius:14px;padding:22px">
+        <div style="font-size:28px;margin-bottom:10px">📢</div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Canal de Denúncias</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Canal seguro, confidencial e estruturado que alimente diretamente o plano de ação</div>
+      </div>
+    </div>
+    <div style="background:linear-gradient(135deg,rgba(0,200,150,0.08),rgba(0,200,150,0.03));border:1px solid rgba(0,200,150,0.2);border-left:4px solid var(--mint);border-radius:12px;padding:20px 24px;margin-top:16px;display:flex;gap:14px;align-items:flex-start">
+      <div style="font-size:24px;flex-shrink:0">🏛️</div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px">Posição oficial do MTE</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7">O objetivo do Ministério do Trabalho e Emprego é <strong style="color:var(--mint)">mudar a cultura corporativa</strong>. O foco não é oferecer benefícios pontuais de bem-estar — é identificar e eliminar na raiz as dinâmicas organizacionais que adoecem o trabalhador.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-diagnostico">
+    <div class="page-header">
+      <div class="page-tag">🆓 Gratuito</div>
+      <h1 class="page-title">Diagnóstico <em>PGR Mental</em></h1>
+      <p class="page-desc">Avalie o nível de risco psicossocial da sua organização. 30 perguntas em 6 categorias. Resultado imediato.</p>
+    </div>
+
+    <div id="diag-intro-section">
+      <div class="diag-intro">
+        <div class="diag-intro-text">
+          <h3>Como funciona o diagnóstico</h3>
+          <p>Responda 30 perguntas sobre o ambiente de trabalho da sua empresa. O sistema classifica automaticamente o nível de risco por categoria e gera um plano de ação baseado nos pontos críticos identificados.</p>
+          <button class="start-btn" onclick="startDiag()">Iniciar Diagnóstico →</button>
+          <div class="diag-badges">
+            <span class="diag-badge">30 perguntas</span>
+            <span class="diag-badge">6 categorias</span>
+            <span class="diag-badge">Resultado imediato</span>
+            <span class="diag-badge">Baseado na NR-1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="diag-question-section" style="display:none">
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+        <div class="progress-text" id="prog-text">Pergunta 1 de 30</div>
+      </div>
+      <div class="question-card">
+        <div class="q-category" id="q-cat"></div>
+        <div class="q-text" id="q-text"></div>
+        <div class="q-options" id="q-opts"></div>
+      </div>
+      <div class="diag-nav">
+        <button class="btn-back" id="btn-back" onclick="prevQ()" style="display:none">← Anterior</button>
+        <button class="btn-next" id="btn-next" onclick="nextQ()" disabled>Próxima →</button>
+      </div>
+    </div>
+
+    <div id="diag-result-section" class="result-wrap">
+      <div class="gauge-section">
+        <div class="gauge-label">Pontuação de Risco Psicossocial</div>
+        <div class="gauge-score" id="res-score"></div>
+        <div class="gauge-classification" id="res-class"></div>
+        <div class="gauge-desc" id="res-desc"></div>
+      </div>
+      <div class="results-grid" id="res-cats"></div>
+      <div class="action-section" id="res-actions"></div>
+      <div class="upgrade-cta">
+        <h3>Próximo passo: Documentar no PGR</h3>
+        <p>Você tem o diagnóstico. Agora precisa de checklist completo, Matriz GUT, templates e plano de ação estruturado para cumprir a lei.</p>
+        <div class="upgrade-features">
+          <span class="uf-item">Checklist com 40+ fatores de risco</span>
+          <span class="uf-item">Matriz GUT editável</span>
+          <span class="uf-item">Templates PGR prontos</span>
+          <span class="uf-item">Plano de 30 dias</span>
+          <span class="uf-item">Roteiro para lideranças</span>
+        </div>
+        <button class="upgrade-btn" onclick="window.open('https://wa.me/5579998368214?text=Olá!%20Vi%20o%20PGR%20Mental%20e%20quero%20desbloquear%20o%20conteúdo%20completo.','_blank')">Desbloquear Conteúdo Completo — R$ 97</button>
+        <div class="upgrade-price">Acesso vitalício · Garantia de 7 dias</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-aula">
+    <div class="page-header">
+      <div class="page-tag">🆓 Gratuito · 5 lições</div>
+      <h1 class="page-title">O que a NR-1<br><em>realmente exige</em></h1>
+      <p class="page-desc">A distinção mais importante — e que a maioria das empresas ainda não compreendeu.</p>
+    </div>
+    <div class="lesson-layout">
+      <div class="lesson-nav">
+        <h4>Lições</h4>
+        <div id="lesson-nav-items"></div>
+      </div>
+      <div class="lesson-content" id="lesson-body"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-carrossel">
+    <div class="page-header">
+      <div class="page-tag">🆓 Gratuito · 10 slides</div>
+      <h1 class="page-title">Conteúdo <em>Educativo</em></h1>
+      <p class="page-desc">Os dados, conceitos e argumentos mais importantes sobre riscos psicossociais e a nova NR-1.</p>
+    </div>
+    <div class="carousel-wrap">
+      <div class="carousel-header">
+        <h3>Riscos Psicossociais — O que você precisa saber</h3>
+        <div class="carousel-counter" id="car-counter">1 / 10</div>
+      </div>
+      <div class="carousel-slides" id="car-slides"></div>
+      <div class="carousel-footer">
+        <div class="carousel-dots" id="car-dots"></div>
+        <div class="carousel-btns">
+          <button class="c-btn" onclick="carPrev()">←</button>
+          <button class="c-btn" onclick="carNext()">→</button>
+        </div>
+      </div>
+    </div>
+    <div class="upgrade-cta">
+      <h3>Gostou do conteúdo? Vá mais fundo.</h3>
+      <p>O guia completo tem metodologia de mapeamento, checklist com 40+ fatores, Matriz GUT, plano de ação e templates prontos para o PGR.</p>
+      <button class="upgrade-btn" onclick="window.open('https://wa.me/5579998368214?text=Olá!%20Vi%20o%20PGR%20Mental%20e%20quero%20desbloquear%20o%20conteúdo%20completo.','_blank')">Acessar Conteúdo Completo — R$ 97</button>
+      <div class="upgrade-price">Acesso vitalício · Garantia de 7 dias</div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<div class="modal-overlay" id="modal-locked">
+  <div class="modal">
+    <button class="modal-close" onclick="closeLocked()">✕</button>
+    <div style="font-size:48px;margin-bottom:16px">🔓</div>
+    <h3>Desbloqueie o Conteúdo Completo</h3>
+    <p>Tudo que você precisa para implementar o mapeamento de riscos psicossociais e estar em conformidade com a NR-1.</p>
+    <div class="modal-features">
+      <span class="modal-feature">Plano de implementação — 30 dias dia a dia</span>
+      <span class="modal-feature">Checklist com mais de 40 fatores de risco</span>
+      <span class="modal-feature">Matriz GUT interativa para priorização</span>
+      <span class="modal-feature">Templates do PGR prontos para editar</span>
+      <span class="modal-feature">Roteiro para treinamento de lideranças</span>
+    </div>
+    <div class="modal-price"><span>R$</span>97</div>
+    <div class="modal-price-sub">Oferta de lançamento · Acesso vitalício</div>
+    <a href="https://wa.me/5579998368214?text=Olá!%20Vi%20o%20PGR%20Mental%20e%20quero%20desbloquear%20o%20conteúdo%20completo." target="_blank" style="display:block;text-decoration:none"><button class="modal-btn" style="width:100%">Comprar Agora — Falar no WhatsApp →</button></a>
+    <div style="font-size:12px;color:var(--muted);margin-top:12px">🛡️ Garantia de 7 dias · ⚡ Acesso imediato · 🔒 Pagamento seguro</div>
+  </div>
+</div>
+
+<script>
+// ========== QUIZ DATA ==========
+const questions = [
+  {cat:"A — Organização do Trabalho",text:"Os funcionários recebem metas que consideram impossíveis de atingir?",inv:false},
+  {cat:"A — Organização do Trabalho",text:"As jornadas de trabalho ultrapassam regularmente o horário contratual?",inv:false},
+  {cat:"A — Organização do Trabalho",text:"Os prazos estabelecidos geram pressão excessiva e constante?",inv:false},
+  {cat:"A — Organização do Trabalho",text:"As funções e responsabilidades de cada cargo são claramente definidas?",inv:true},
+  {cat:"A — Organização do Trabalho",text:"Os funcionários têm autonomia para tomar decisões no seu trabalho?",inv:true},
+  {cat:"B — Relações Interpessoais",text:"Existem conflitos frequentes entre colaboradores ou lideranças?",inv:false},
+  {cat:"B — Relações Interpessoais",text:"Há comportamentos de humilhação, ameaça ou isolamento de funcionários?",inv:false},
+  {cat:"B — Relações Interpessoais",text:"Os funcionários se sentem valorizados e reconhecidos pelo trabalho?",inv:true},
+  {cat:"B — Relações Interpessoais",text:"A liderança oferece suporte emocional e profissional à equipe?",inv:true},
+  {cat:"B — Relações Interpessoais",text:"Há casos relatados ou percebidos de assédio moral ou sexual?",inv:false},
+  {cat:"C — Condições de Trabalho",text:"O ambiente físico é inadequado (ruído, temperatura, iluminação)?",inv:false},
+  {cat:"C — Condições de Trabalho",text:"Os funcionários dispõem de pausas e momentos de descanso?",inv:true},
+  {cat:"C — Condições de Trabalho",text:"Trabalhadores remotos recebem suporte e acompanhamento adequados?",inv:true},
+  {cat:"C — Condições de Trabalho",text:"A empresa oferece recursos suficientes para realização do trabalho?",inv:true},
+  {cat:"C — Condições de Trabalho",text:"O ambiente é percebido como seguro para expressar opiniões?",inv:true},
+  {cat:"D — Carga de Trabalho",text:"Os funcionários relatam sentir-se sobrecarregados com o volume de tarefas?",inv:false},
+  {cat:"D — Carga de Trabalho",text:"O trabalho exige esforço emocional intenso (crise, atendimento ao público)?",inv:false},
+  {cat:"D — Carga de Trabalho",text:"As tarefas estão alinhadas com a capacitação dos funcionários?",inv:true},
+  {cat:"D — Carga de Trabalho",text:"Há conflito entre valores pessoais dos funcionários e exigências da empresa?",inv:false},
+  {cat:"D — Carga de Trabalho",text:"Os funcionários conseguem concluir tarefas dentro do horário de trabalho?",inv:true},
+  {cat:"E — Equilíbrio Vida-Trabalho",text:"Os funcionários recebem contatos de trabalho fora do horário de expediente?",inv:false},
+  {cat:"E — Equilíbrio Vida-Trabalho",text:"A empresa respeita o direito à desconexão após o expediente?",inv:true},
+  {cat:"E — Equilíbrio Vida-Trabalho",text:"Há flexibilidade de horário para situações pessoais e familiares?",inv:true},
+  {cat:"E — Equilíbrio Vida-Trabalho",text:"O trabalho prejudica a vida pessoal e familiar dos funcionários?",inv:false},
+  {cat:"E — Equilíbrio Vida-Trabalho",text:"A empresa oferece apoio à saúde mental (psicólogo, EAP)?",inv:true},
+  {cat:"F — Segurança e Desenvolvimento",text:"Os funcionários sentem insegurança quanto à continuidade do emprego?",inv:false},
+  {cat:"F — Segurança e Desenvolvimento",text:"Há oportunidades claras de crescimento e desenvolvimento profissional?",inv:true},
+  {cat:"F — Segurança e Desenvolvimento",text:"Os funcionários recebem feedback regular sobre seu desempenho?",inv:true},
+  {cat:"F — Segurança e Desenvolvimento",text:"A comunicação interna é transparente e eficiente?",inv:true},
+  {cat:"F — Segurança e Desenvolvimento",text:"A empresa possui canal de denúncia anônimo para casos de assédio?",inv:true}
+];
+
+const lessons = [
+  {title:"Lição 1: O Conceito de Risco Psicossocial",body:"<p>Risco psicossocial é qualquer aspecto do trabalho que pode prejudicar a saúde mental, emocional ou física do trabalhador.</p><p>A NR-1 diferencia <strong>bem-estar corporativo</strong> (programas de yoga, meditação) de <strong>eliminação de riscos psicossociais</strong> (mudanças estruturais na organização).</p><div class='lesson-highlight'><strong>Diferença crítica:</strong> Oferecer psicólogo ou meditação NÃO cumpre a lei se o ambiente continua adoecedor.</div>"},
+  {title:"Lição 2: Mapeamento vs. Paliativos",body:"<p>A maioria das empresas oferece <strong>paliativos</strong> — benefícios que amenizam sintomas.</p><p>A NR-1 exige <strong>mapeamento ativo</strong> — identificar e eliminar a raiz dos problemas.</p><div class='lesson-highlight-amber'><strong>Exemplo:</strong> Em vez de oferecer psicólogo para lidar com assédio moral, a empresa deve eliminar o agressor ou a dinâmica que produz assédio.</div>"},
+  {title:"Lição 3: Os 6 Eixos de Risco",body:"<p><strong>A — Organização do Trabalho:</strong> Metas impossíveis, sobrecarga, falta de clareza de papéis.</p><p><strong>B — Relações Interpessoais:</strong> Conflitos, humilhação, assédio.</p><p><strong>C — Condições de Trabalho:</strong> Ambiente inadequado, falta de recursos.</p><p><strong>D — Carga de Trabalho:</strong> Volume excessivo, esforço emocional intenso.</p><p><strong>E — Equilíbrio Vida-Trabalho:</strong> Ausência de desconexão, inflexibilidade.</p><p><strong>F — Segurança e Desenvolvimento:</strong> Insegurança do emprego, falta de crescimento.</p>"},
+  {title:"Lição 4: O Papel do PGR",body:"<p>O PGR (Programa de Gerenciamento de Riscos) <strong>agora é obrigatório</strong> para incluir riscos psicossociais.</p><p>O documento não é apenas teórico — deve conter:</p><ul style='margin: 16px 0; padding-left: 20px;'><li>Diagnóstico específico da empresa</li><li>Ações concretas de eliminação (não apenas mitigação)</li><li>Responsáveis e prazos</li><li>Sistema de monitoramento</li><li>Canal de denúncias confidencial</li></ul>"},
+  {title:"Lição 5: Próximos Passos",body:"<p>Agora que você entendeu o conceito, faça:</p><p><strong>1. Diagnóstico:</strong> Use a ferramenta para avaliar sua empresa.</p><p><strong>2. Mapeamento Completo:</strong> Identifique todos os riscos por categoria.</p><p><strong>3. Documentação no PGR:</strong> Insira os riscos psicossociais oficialmente.</p><p><strong>4. Plano de Ação:</strong> Defina ações e responsáveis.</p><p><strong>5. Monitoramento:</strong> Acompanhe resultados e implemente correções.</p>"}
+];
+
+const carousel = [
+  {tag:"CONTEXTO",title:"540 mil afastamentos em 2025",body:"O número de afastamentos por transtornos mentais cresceu 68% em um ano. Isso representa uma crise silenciosa nas organizações.",stat:"68%",label:"crescimento anual"},
+  {tag:"CONTEXTO",title:"58% dos trabalhadores enfrentam risco psicossocial",body:"Quase 6 em cada 10 colaboradores têm sua saúde mental afetada pela dinâmica do trabalho.",stat:"58%",label:"da força de trabalho"},
+  {tag:"IMPACTO FINANCEIRO",title:"Custo direto e indireto",body:"Afastamentos, turnover, queda de produtividade e processos trabalhistas custam bilhões às empresas. Investir em eliminação de riscos é economicamente racional.",stat:"R$ 2.1B",label:"custo anual para economia"},
+  {tag:"LEGISLAÇÃO",title:"Punitivo desde 26 de maio de 2026",body:"Não há mais fase educativa. Auditores do trabalho aplicam multas imediatas. Empresas sem PGR com riscos psicossociais enfrentam processos.",stat:"10x",label:"multa aumentada"},
+  {tag:"ESTRATÉGIA",title:"Mapeamento é o primeiro passo",body:"Sem dados, não há ação. O mapeamento estruturado identifica os reais causadores de adoecimento — e abre caminho para soluções duráveis.",stat:"1º",label:"passo obrigatório"},
+  {tag:"TRANSFORMAÇÃO",title:"Mudar a cultura corporativa",body:"O MTE não quer que as empresas apenas 'cuidem' dos funcionários. Quer que eliminem as dinâmicas organizacionais que adoecem. É transformação, não cosmética.",stat:"100%",label:"de comprometimento"},
+  {tag:"EXEMPLO",title:"De risco invisível a ação visível",body:"Uma empresa com clima tóxico oferecia yoga para colaboradores. Continua tóxica, mas agora com yoga. A solução era eliminar o gestor abusivo — não oferecer paliativos.",stat:"0",label:"valor de paliativo"},
+  {tag:"IMPLEMENTAÇÃO",title:"Quem deve estar envolvido",body:"Liderança, RH, medicina ocupacional, representantes dos trabalhadores e, se houver, sindicato. É decisão corporativa, não apenas HR.",stat:"5-7",label:"áreas envolvidas"},
+  {tag:"CONFORMIDADE",title:"O que é obrigatório no PGR",body:"Diagnóstico, mapeamento por categorias, plano de ação com prazos, responsáveis, sistema de monitoramento, canal de denúncias confidencial.",stat:"6",label:"componentes"}
+];
+
+// ========== STATE ==========
+let currentQ = 0;
+let answers = {};
+let currentLesson = 0;
+let currentCarousel = 0;
+
+// ========== NAVIGATION ==========
+function navigate(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+screen).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  if(event && event.target && event.target.closest('.nav-item')) {
+    event.target.closest('.nav-item').classList.add('active');
+  }
+  
+  if(screen === 'aula') initLessons();
+  if(screen === 'carrossel') initCarousel();
+}
+
+function showLocked(){document.getElementById('modal-locked').classList.add('open');}
+function closeLocked(){document.getElementById('modal-locked').classList.remove('open');}
+
+// ========== DIAGNOSTICO ==========
+function startDiag(){
+  document.getElementById('diag-intro-section').style.display='none';
+  document.getElementById('diag-question-section').style.display='block';
+  currentQ = 0;
+  answers = {};
+  showQuestion();
+}
+
+function showQuestion(){
+  const q = questions[currentQ];
+  document.getElementById('q-cat').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.text;
+  
+  const opts = ['Nunca','Raramente','Às vezes','Frequente','Sempre'];
+  let optsHtml = '';
+  for(let i=1;i<=5;i++){
+    const sel = answers[currentQ] === i ? 'selected' : '';
+    optsHtml += `<div class='q-opt ${sel}' onclick="selectOpt(${i})" data-val='${i}'><span class='opt-label'>${opts[i-1]}</span><span class='opt-val'>${i}</span></div>`;
+  }
+  document.getElementById('q-opts').innerHTML = optsHtml;
+  
+  document.getElementById('prog-fill').style.width = ((currentQ+1)/questions.length)*100 + '%';
+  document.getElementById('prog-text').textContent = `Pergunta ${currentQ+1} de ${questions.length}`;
+  document.getElementById('btn-back').style.display = currentQ === 0 ? 'none' : 'block';
+  document.getElementById('btn-next').disabled = !answers[currentQ];
+}
+
+function selectOpt(val){
+  answers[currentQ] = val;
+  document.querySelectorAll('.q-opt').forEach(o=>o.classList.remove('selected'));
+  event.target.closest('.q-opt').classList.add('selected');
+  document.getElementById('btn-next').disabled = false;
+}
+
+function nextQ(){
+  if(currentQ < questions.length-1){
+    currentQ++;
+    showQuestion();
+  }else{
+    calcResult();
+  }
+}
+
+function prevQ(){
+  if(currentQ > 0){
+    currentQ--;
+    showQuestion();
+  }
+}
+
+function calcResult(){
+  const scores = {A:0,B:0,C:0,D:0,E:0,F:0};
+  
+  questions.forEach((q,i)=>{
+    const cat = q.cat.substring(0,1);
+    let val = answers[i] || 3;
+    if(q.inv) val = 6 - val;
+    scores[cat] = (scores[cat] || 0) + val;
+  });
+  
+  const total = Object.values(scores).reduce((a,b)=>a+b,0);
+  const avg = total / 30;
+  
+  let cls = '';
+  let desc = '';
+  if(avg < 2) { cls = '✅ Baixo Risco'; desc = 'Sua empresa está em uma posição segura. Continue monitorando e implemente as pequenas melhorias sugeridas.'; }
+  else if(avg < 3) { cls = '⚠️ Risco Moderado'; desc = 'Existem áreas que precisam de ação. Priorize as categorias com pontuação mais alta.'; }
+  else if(avg < 4) { cls = '🔴 Risco Alto'; desc = 'Situação crítica. Implemente mudanças imediatas nas áreas identificadas.'; }
+  else { cls = '🚨 Risco Crítico'; desc = 'Situação muito grave. Procure orientação profissional imediatamente.'; }
+  
+  document.getElementById('res-score').textContent = Math.round(avg*10)/10;
+  document.getElementById('res-class').textContent = cls;
+  document.getElementById('res-desc').textContent = desc;
+  
+  let catsHtml = '';
+  Object.keys(scores).forEach(cat=>{
+    const catName = ['A — Organização','B — Relações','C — Condições','D — Carga','E — Equilíbrio','F — Segurança'][cat.charCodeAt(0)-65];
+    const catScore = scores[cat] / 5;
+    const color = catScore<2?'var(--mint)':catScore<3?'var(--amber)':'var(--red)';
+    catsHtml += `<div class='result-cat'><div class='result-cat-name'>${catName}</div><div class='result-cat-bar'><div class='result-cat-fill' style='width:${catScore*20}%;background:${color}'></div></div><div class='result-cat-score'>${catScore.toFixed(1)}/5</div></div>`;
+  });
+  document.getElementById('res-cats').innerHTML = catsHtml;
+  
+  let actionsHtml = '<h3>🎯 Plano de Ação Sugerido</h3>';
+  const suggestions = {
+    A: 'Revisar metas, processos e papéis. Aumentar clareza e reduzir sobrecarga.',
+    B: 'Mediar conflitos, reforçar cultura de respeito, investigar assédio.',
+    C: 'Melhorar ambiente físico, aumentar pausas, suportar remoto adequadamente.',
+    D: 'Redistribuir tarefas, oferecer capacitação, alinhar valores.',
+    E: 'Garantir desconexão fora de horário, flexibilizar, oferecer suporte psicológico.',
+    F: 'Comunicar transparência, criar plano de desenvolvimento, implementar canal de denúncias.'
+  };
+  
+  Object.keys(scores).forEach(cat=>{
+    if(scores[cat] > 12){
+      const priority = scores[cat] > 18 ? 'high' : 'med';
+      const icon = priority === 'high' ? '🔴' : '🟡';
+      actionsHtml += `<div class='action-item ${priority}'><div class='action-num'>${icon}</div><div class='action-content'><h5>${cat} — ${suggestions[cat].split(',')[0]}</h5><p>${suggestions[cat]}</p></div></div>`;
+    }
+  });
+  document.getElementById('res-actions').innerHTML = actionsHtml;
+  
+  document.getElementById('diag-question-section').style.display='none';
+  document.getElementById('diag-result-section').classList.remove('result-wrap');
+  document.getElementById('diag-result-section').style.display='block';
+}
+
+// ========== LESSONS ==========
+function initLessons(){
+  let nav = '';
+  lessons.forEach((l,i)=>{
+    nav += `<div class='lesson-item ${i===0?'active':''}' onclick='selectLesson(${i})'><div class='lesson-num'>${i+1}</div>${l.title}</div>`;
+  });
+  document.getElementById('lesson-nav-items').innerHTML = nav;
+  selectLesson(0);
+}
+
+function selectLesson(idx){
+  currentLesson = idx;
+  const l = lessons[idx];
+  let html = `<div class='lesson-header'><div class='lesson-tag'>LIÇÃO ${idx+1}</div><h2 class='lesson-title'>${l.title}</h2></div><div class='lesson-body'>${l.body}</div>`;
+  document.getElementById('lesson-body').innerHTML = html;
+  document.querySelectorAll('.lesson-item').forEach((i,x)=>i.classList.toggle('active',x===idx));
+}
+
+// ========== CAROUSEL ==========
+function initCarousel(){
+  let slides = '';
+  carousel.forEach((s,i)=>{
+    slides += `<div class='slide ${i===0?'active':''}'><div class='slide-num'>${i+1}</div><div class='slide-tag'>${s.tag}</div><div class='slide-title'>${s.title}</div><div class='slide-body'>${s.body}</div><div><div class='slide-stat'>${s.stat}</div><div class='slide-stat-label'>${s.label}</div></div></div>`;
+  });
+  document.getElementById('car-slides').innerHTML = slides;
+  
+  let dots = '';
+  carousel.forEach((s,i)=>{
+    dots += `<div class='dot ${i===0?'active':''}'onclick='carGo(${i})'></div>`;
+  });
+  document.getElementById('car-dots').innerHTML = dots;
+  currentCarousel = 0;
+  updateCarouselUI();
+}
+
+function carNext(){currentCarousel = (currentCarousel+1)%carousel.length; updateCarousel();}
+function carPrev(){currentCarousel = (currentCarousel-1+carousel.length)%carousel.length; updateCarousel();}
+function carGo(i){currentCarousel = i; updateCarousel();}
+
+function updateCarousel(){
+  document.querySelectorAll('.slide').forEach((s,i)=>s.classList.toggle('active',i===currentCarousel));
+  document.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===currentCarousel));
+  updateCarouselUI();
+}
+
+function updateCarouselUI(){
+  document.getElementById('car-counter').textContent = `${currentCarousel+1} / ${carousel.length}`;
+}
+</script>
+</body>
+</html>
